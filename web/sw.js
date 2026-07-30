@@ -4,7 +4,7 @@
  */
 // ponytail: 外殼走 cache-first,所以改了 index.html / app.js / styles.css 就要把版號往上加一,
 // 否則舊使用者拿到的還是舊快取。天花板:沒有內容 hash、沒有建置步驟,換版號是唯一的發佈動作。
-const CACHE = 'taigi-caption-v4';
+const CACHE = 'taigi-caption-v5';
 const SHELL = ['./', 'index.html', 'app.js', 'styles.css', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

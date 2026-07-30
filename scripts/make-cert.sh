@@ -2,7 +2,8 @@
 # 產一張自簽憑證給手機用。手機瀏覽器只在 HTTPS(或 localhost)下才給麥克風權限,
 # 所以區網測試繞不過這一步。已經有憑證就不重產,可以重複執行。
 #
-# 換 IP 或想多帶一個位址:TAIGI_IP=192.168.1.50 scripts/make-cert.sh(會先刪 certs/ 才重產)
+# 換 IP 或想多帶一個位址:先自己 rm -rf certs/,再跑 TAIGI_IP=192.168.1.50 scripts/make-cert.sh
+#(這支腳本偵測到憑證存在就不重產,不會自己刪)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
