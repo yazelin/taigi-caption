@@ -1,0 +1,18 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 自簽憑證,裡面有私鑰
+certs/
+
+# 測試素材不隨 repo 散布(音檔授權須另行取得同意,見 README)
+testdata/
+*.wav
+
+# 端到端測試的截圖(桌機與手機視埠)
+e2e-shot*.png
+
+# Node
+node_modules/

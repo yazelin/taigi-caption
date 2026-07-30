@@ -1,0 +1,8 @@
+# 版本是本機實測過的那一組(Ubuntu 24.04 / Python 3.12 / RTX 4060 / CUDA 12.6),不是猜的。
+# 要用 GPU 就照這組裝;純 CPU 也能跑,但實測慢於即時,見 VERIFICATION.md 第五節。
+faster-whisper==1.2.1
+fastapi==0.141.1
+uvicorn==0.52.0
+python-multipart==0.0.32
+numpy==2.5.1
+httpx==0.28.1
