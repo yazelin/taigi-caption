@@ -82,7 +82,13 @@ async function attempt(n) {
   });
   // ignoreHTTPSErrors 是為了 scripts/make-cert.sh 產的自簽憑證:
   // 使用者實際就是跑 HTTPS(手機要麥克風權限),測試也應該能打那個位址。
-  const ctx = await browser.newContext({ permissions: ['microphone'], ignoreHTTPSErrors: true });
+  //
+  // 刻意不傳 permissions:麥克風已經由 --use-fake-ui-for-media-stream 自動同意,
+  // 而 Playwright 的 permissions 清單是「整組取代」,傳了它會把清單外的權限一律設成拒絕,
+  // 連帶拒掉 Chrome 的本機網路存取權限。那會讓「前端在 GitHub Pages、後端在使用者本機」
+  // 這個情境直接失敗,錯誤訊息是
+  // 「Permission was denied for this request to access the loopback address space」。
+  const ctx = await browser.newContext({ ignoreHTTPSErrors: true });
   const page = await ctx.newPage();
   // 自簽憑證下 service worker 一定註冊不起來(Chrome 不讓有憑證錯誤的來源註冊 SW),
   // 那是憑證的限制不是 app 的錯,所以歸到 notes 不算失敗。其餘主控台錯誤一律算失敗。
@@ -99,8 +105,15 @@ async function attempt(n) {
     } catch (e) {
       return { verdict: 'goto', err: String(e.message || e).split('\n')[0] };
     }
+    // 走 app 自己的 apiUrl(),不要寫死同源的 /health:
+    // 前端可能佈在 GitHub Pages 而後端在使用者本機(用 ?api= 指定),
+    // 那種情況下打同源會拿到 Pages 的 404 HTML,解析成 JSON 就炸了。
     const health = await page
-      .evaluate(async () => (await fetch('/health', { cache: 'no-store' })).json())
+      .evaluate(async () => {
+        const u = window.__taigi ? window.__taigi.apiUrl('/health') : '/health';
+        const r = await fetch(u, { cache: 'no-store' });
+        return r.json();
+      })
       .catch((e) => ({ error: String(e) }));
     if (n === 1) console.log(`後端 /health:${JSON.stringify(health)}`);
     if (!health.ok) return { verdict: 'backend', health };

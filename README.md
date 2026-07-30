@@ -285,6 +285,8 @@ CTranslate2 量化版與 GGML、MLX 版都是社群轉檔。原始權重來自 M
 
 模型權重不在本 repo 內，授權為 Apache-2.0，著作權屬原作者 MediaTek Research 與陽明交通大學 Speech AI Research Center。`testdata/` 的音檔與文稿也不在 repo 內，各自的出處與授權記在 manifest 的 `license` 欄位。
 
+**`web-pages/demo.mp4` 是例外,它不適用 MIT。** 那支影片的聲軌是教育部臺灣台語常用詞辭典的例句錄音,授權為 CC BY-NC-SA 4.0(取自 https://huggingface.co/datasets/sarahwei/Taiwanese-Minnan-Example-Sentences ),依 ShareAlike 條款,含有該聲軌的影片同樣以 CC BY-NC-SA 4.0 釋出,並須註明出處。要把影片用在商業用途,得換成自己錄的聲音重錄一支。
+
 ## 作者
 
 - 原始碼 GitHub:https://github.com/yazelin/taigi-caption

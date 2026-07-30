@@ -25,11 +25,16 @@ const stage = el('stage');
 
 /* ---------- 設定 ---------- */
 
+// ?api=<後端位址> 可以直接把後端填好,讓說明頁的按鈕一鍵帶進來,使用者不必自己打字。
+// 網址帶的優先,並且會寫回 localStorage,所以之後直接開也記得。
+const apiParam = new URLSearchParams(location.search).get('api');
+
 const cfg = {
-  base: localStorage.getItem(KEY + 'base') || '',
+  base: apiParam || localStorage.getItem(KEY + 'base') || '',
   size: +(localStorage.getItem(KEY + 'size') || 100),
   demo: localStorage.getItem(KEY + 'demo') === '1',
 };
+if (apiParam) localStorage.setItem(KEY + 'base', apiParam);
 
 function apiUrl(path) {
   return (cfg.base ? cfg.base.replace(/\/+$/, '') : '') + path;

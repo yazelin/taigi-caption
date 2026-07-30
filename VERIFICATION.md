@@ -330,6 +330,32 @@ iOS 上的 AudioWorklet 與麥克風權限行為要在真機才算驗過,目前�
 也就是說用自簽憑證時,PWA 的離線外殼與「加到主畫面」不會生效,只有字幕功能本身能用。
 要完整的 PWA 行為需要一張被信任的憑證(自己的網域,或 Tailscale 之類會發真憑證的通道)。
 
+## 五之四、前端放 GitHub Pages、後端留在使用者電腦,這條路實測可行
+
+這是為了「給人試玩」找出來的組合:前端是公開的 HTTPS 靜態頁,後端跑在使用者自己的電腦上。
+好處是使用者不必安裝前端、也不必處理自簽憑證。
+
+實測結果:**整條路通**。從 `https://yazelin.github.io/taigi-caption/app/?api=http://127.0.0.1:8002`
+開頁,用假麥克風播真人台語音檔,畫面確實出現字幕,後端 `/health` 回報 `device: cuda`。
+
+但有一個一定會遇到、而且很容易被誤判成故障的東西:
+
+**Chrome 會要求「存取本機網路裝置」的權限。** 從公開網站去打 `127.0.0.1` 屬於跨位址空間的請求,
+使用者按拒絕的話,請求會被擋掉,主控台訊息是
+`Access to fetch ... has been blocked by CORS policy: Permission was denied for this request to access the loopback address space.`
+
+這件事是在自動化測試裡踩出來的,而且踩法本身值得記下來:
+**Playwright 的 `permissions` 清單是整組取代的**,傳 `permissions: ['microphone']` 會把清單外的權限
+一律設成拒絕,連帶拒掉本機網路存取。所以 `scripts/e2e-check.mjs` 刻意不傳 `permissions`,
+麥克風改由 `--use-fake-ui-for-media-stream` 自動同意。
+一開始沒想通這點,誤以為是 service worker 攔截造成的,還特地驗過一輪
+(結論:service worker 接管與否都不影響,四種情況都成功),白繞了一圈。
+
+對使用者的意義:會跳兩個權限視窗(麥克風、本機網路裝置),兩個都要允許。這已經寫進說明頁。
+
+誠實邊界:只在 Chrome 測過。Safari 與 Firefox 對本機網路存取的處理不同,沒測過。
+另外這條路只適用電腦:手機開這個網址時 `127.0.0.1` 指的是手機自己。
+
 ## 六、這些數字的邊界(不要過度解讀)
 
 - 第一、二節的素材是合成語音,而 Breeze-ASR-26 的訓練語料本身就是合成語音,
