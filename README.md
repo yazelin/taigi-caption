@@ -233,9 +233,38 @@ CTranslate2 量化版與 GGML、MLX 版都是社群轉檔。原始權重來自 M
 - 合成語音的分數偏樂觀。這顆模型的訓練語料本身就是合成語音，三句合成音檔在 `zh` 下量到的 5.6% CER 是最寬鬆的條件，不能拿來宣稱真人準確度。真人請以 30% 這個量級為預期。
 - 防幻聽門檻的邊界很窄。實測最接近門檻的幻聽是 -1.02，預設門檻 -1.0，只差 0.02。在吵雜環境講話有可能被誤殺，發現真的在講話卻沒出字就調 `TAIGI_MIN_LOGPROB`。
 - 需要網路與後端，不做離線辨識。介面外殼有 service worker 快取，離線時頁面會開，但不會有字幕。
+- 想放上線給陌生人試玩的話,選項與各家限制整理在 [docs/HOSTING.md](docs/HOSTING.md)。
+  重點結論:這顆模型是別人微調的,所有「託管模型 API」都跑不了它(Cloudflare Workers AI 只有內建模型、
+  HF 也沒有任何 inference provider 在服務它),所以一定要自己出算力。
 - 用自簽憑證連線時 service worker 根本不會註冊。Chrome 不讓有憑證錯誤的來源註冊 service worker（主控台會出現 An SSL certificate error occurred when fetching the script），所以走 `scripts/make-cert.sh` 那條路時沒有離線外殼、也不能「加到主畫面」，只有字幕功能本身可用。要完整的 PWA 行為需要一張被信任的憑證，例如自己的網域，或 Tailscale 之類會發真憑證的通道。實測見 [VERIFICATION.md](VERIFICATION.md) 五之三。
 - 單機單模型，同時進模型的請求刻意壓在 2 個，其餘排隊。給多人同時用要另外上多 worker 或外部佇列。
 - 只吃 16000Hz、單聲道、16-bit PCM 的 WAV。後端不帶轉檔器，也不依賴 ffmpeg，格式轉換由前端負責。
+
+## 參考資料與素材出處
+
+模型與評測基準:
+
+- 模型卡 https://huggingface.co/MediaTek-Research/Breeze-ASR-26 (Apache-2.0,MediaTek Research 與陽明交通大學 Speech AI Research Center)
+- 論文 Breeze Taigi: Benchmarks and Models for Taiwanese Hokkien Speech Recognition and Synthesis,arXiv 2603.19259
+- 本專案實際載入的 CTranslate2 int8 量化版 https://huggingface.co/WizardForest/faster-whisper-Breeze-ASR-26-int8 (社群轉檔)
+- 推論框架 faster-whisper https://github.com/SYSTRAN/faster-whisper
+
+驗證素材(都不隨 repo 散布,授權見各自 manifest 的 `license` 欄位):
+
+- 行政院公共服務廣播台語音檔與華語腳本,共 14 段。來源是行政院全球資訊網音檔下載區的三個月包:
+  https://www.ey.gov.tw/Page/463789EEBA7377FC/9c1f7ecb-a125-4aee-aaa0-ed46f4b296a8 (115 年 3 月)、
+  https://www.ey.gov.tw/Page/463789EEBA7377FC/c892b96e-7f4b-4702-9b51-d2bc5e0db6c8 (115 年 8 月)、
+  https://www.ey.gov.tw/Page/463789EEBA7377FC/8dc67b2b-32a8-46e9-ab03-6bab7cff46bc (114 年國慶交管)。
+  文稿依政府網站資料開放宣告適用政府資料開放授權條款第 1 版,可重製但須註明出處;
+  同一份宣告把「影音」列為須另行取得同意,所以音檔本身只留在本機,不進版控也不放進公開影片。
+- 教育部臺灣台語常用詞辭典例句錄音,取自 https://huggingface.co/datasets/sarahwei/Taiwanese-Minnan-Example-Sentences ,授權 CC BY-NC-SA 4.0。
+- 台語連續劇語料,取自 https://huggingface.co/datasets/thomas0104/nan_tw_soap_opera ,授權未宣告,只用於本機聽感參考,不列入任何數字。
+- 三段合成短句由意傳科技媠聲 demo 端點產生 https://hapsing.ithuan.tw/ ,句子內容由本專案指定,僅供本機測試。
+
+平台限制的官方依據(README 裡幾個「為什麼要這樣做」的出處):
+
+- 麥克風需要安全環境 https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+- 前端不使用 MediaRecorder 分段的原因,見 MediaStream Recording API https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API
 
 ## 出處與致謝
 
