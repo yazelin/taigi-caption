@@ -45,14 +45,22 @@ WT="$(mktemp -d)"
 git worktree add --detach "$WT" >/dev/null
 (
   cd "$WT"
-  git checkout --orphan "$BRANCH" >/dev/null 2>&1
+  # 用一個臨時的 orphan 分支名,再 push 到 gh-pages。
+  # 不要直接 checkout --orphan gh-pages:第二次跑會因為分支已存在而失敗,
+  # 而且如果把錯誤導掉,腳本會在 set -e 下無聲中止,看起來像成功但其實什麼都沒推上去。
+  TMPB="pages-build-$$"
+  git checkout --orphan "$TMPB"
   git rm -rf . >/dev/null 2>&1 || true
   cp -r "$BUILD"/. .
   git add -A
   git -c user.name="${GIT_NAME:-yazelin}" -c user.email="${GIT_EMAIL:-yazelin@ching-tech.com}" \
       commit -q -m "publish: 台語即時字幕說明頁與介面"
-  git push -qf origin "$BRANCH"
+  git push -f origin "HEAD:$BRANCH"
 )
 git worktree remove --force "$WT"
+
+# 推完一定要回頭確認遠端真的變了,不要相信「指令沒報錯」
+PUSHED="$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)"
+echo "遠端 $BRANCH 目前指向 ${PUSHED:0:12}"
 echo "完成。網址 https://yazelin.github.io/taigi-caption/"
 echo "第一次佈署要到 repo Settings → Pages 把來源設成 gh-pages 分支的根目錄。"
