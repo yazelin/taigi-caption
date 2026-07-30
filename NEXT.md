@@ -5,8 +5,13 @@
       未記錄的部分:當時用的是哪支手機與哪個瀏覽器,所以 iOS Safari 仍不算單獨驗過。
 - [ ] 真機的「手感」還沒回報:自然對話的停頓能不能正常切句、字級在手臂距離讀不讀得清楚。
       多用幾次再判斷,不要憑一次印象調參數。
+- [x] 說明頁已上 GitHub Pages:https://yazelin.github.io/taigi-caption/ (2026-07-31)。
+      前端可直接驅動使用者本機的後端,已從線上網址實測通過。repo homepage 也設好了。
+      重新佈署跑 scripts/publish-pages.sh(它每次都從 web/ 重新複製,不會漂移)。
 - [ ] repo 的 Settings → Social preview 手動上傳一張成果截圖(GitHub 沒有 API),
-      願望池那邊會自動把它顯示成實作預覽。可以用端到端測試產生的 e2e-shot-mobile.png。
+      願望池那邊會自動把它顯示成實作預覽。可以用 web-pages/demo-poster.jpg。
+- [ ] 願望 #37 的完成條件已寫死在願望池的進度裡:有人把後端架起來給一個公開網址就算成真。
+      選項與各家限制在 docs/HOSTING.md,目前最實際的是 Beam(每月 30 美元額度重置、FastAPI 幾乎不用改)。
 - [ ] 若真機測出 VAD 切得太碎或太晚,調 web/app.js 的 HANG(靜音多久算句子結束,目前 700ms)
       與 MAXF(硬上限,目前 12 秒),不要動門檻以外的邏輯。
 - [ ] 沒做但可能有價值:真人自然口語的 CER 目前沒有樣本(手上 14 段都是專業配音的廣播),
