@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0b1016">
+<meta name="description" content="對手機或電腦講台語，螢幕即時顯示繁體中文字，給不懂台語的人當場讀。這一頁是前端，辨識要你自己在電腦上跑後端。">
+<!-- 零外連：沒有 CDN、沒有外部字型、沒有外部圖片，樣式全部寫在頁內。 -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; script-src 'none'; base-uri 'none'; form-action 'none'">
+<title>台語即時字幕</title>
+<!-- 圖示直接寫成 data URI，不外連也不多一個檔案。 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1016'/%3E%3Cpath d='M6 8h20v13H15l-6 5v-5H6z' fill='%232ec4a6'/%3E%3C/svg%3E">
+<style>
+:root {
+  --ink: #0b1016;
+  --ink-2: #131b25;
+  --line: #24313f;
+  --fg: #eef4fb;
+  --fg-dim: #93a4b8;
+  --go: #2ec4a6;
+  --go-ink: #04120e;
+  --stop: #ff6b6b;
+  --warn: #ffc857;
+  --warn-bg: #3a2a08;
+  --warn-line: #6b5316;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--fg);
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.8;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.wrap {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.6rem 1.1rem 3rem;
+}
+
+p, li { overflow-wrap: break-word; }
+
+a { color: var(--go); overflow-wrap: break-word; }
+a:hover, a:focus-visible { color: var(--fg); }
+
+/* 標題 */
+header.top { padding-bottom: .4rem; }
+
+.tag {
+  display: inline-block;
+  margin: 0 0 .8rem;
+  padding: .18rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg-dim);
+  font-size: .8rem;
+  line-height: 1.6;
+}
+
+h1 {
+  margin: 0 0 .5rem;
+  font-size: clamp(1.7rem, 7vw, 2.3rem);
+  line-height: 1.3;
+  letter-spacing: .02em;
+}
+
+.lead {
+  margin: 0 0 1.4rem;
+  color: var(--fg-dim);
+  font-size: 1.05rem;
+}
+
+h2 {
+  margin: 2.4rem 0 .8rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--line);
+  font-size: 1.3rem;
+  line-height: 1.5;
+  letter-spacing: .02em;
+}
+
+h3 {
+  margin: 1.6rem 0 .5rem;
+  font-size: 1.05rem;
+  color: var(--fg);
+}
+
+p { margin: 0 0 1rem; }
+
+strong { color: var(--fg); font-weight: 700; }
+
+/* 最前面那塊誠實警語 */
+.notice {
+  margin: 0 0 1.6rem;
+  padding: 1rem 1.1rem .4rem;
+  border: 1px solid var(--warn-line);
+  border-radius: 14px;
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+
+.notice h2 {
+  margin: 0 0 .6rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.1rem;
+  color: var(--warn);
+}
+
+.notice p { margin: 0 0 .8rem; }
+.notice strong { color: #ffe6a8; }
+
+/* 影片 */
+figure { margin: 0 0 1.2rem; }
+
+video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #000;
+}
+
+figcaption {
+  margin-top: .7rem;
+  color: var(--fg-dim);
+  font-size: .9rem;
+}
+
+/* 按鈕 */
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  margin: 1.2rem 0 .8rem;
+  padding: .6rem 1rem;
+  border-radius: 16px;
+  background: var(--go);
+  color: var(--go-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-align: center;
+  text-decoration: none;
+}
+
+.cta:hover, .cta:focus-visible { background: #3ad9b9; color: var(--go-ink); }
+
+/* 程式碼 */
+pre {
+  margin: 0 0 1rem;
+  padding: .9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--ink-2);
+  overflow-x: auto;
+  font-size: .9rem;
+  line-height: 1.75;
+}
+
+pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Noto Sans Mono", monospace; }
+
+/* 手機上讓指令折行，免得要橫向拉才讀得完 */
+@media (max-width: 520px) {
+  pre { white-space: pre-wrap; overflow-wrap: break-word; }
+}
+
+code {
+  padding: .1em .35em;
+  border-radius: 5px;
+  background: var(--ink-2);
+  color: var(--fg);
+  font-size: .9em;
+}
+
+pre code { padding: 0; background: none; font-size: 1em; }
+
+/* 清單 */
+ol.steps {
+  margin: 0 0 1rem;
+  padding-left: 1.3rem;
+}
+
+ol.steps > li { margin-bottom: 1.4rem; }
+ol.steps > li::marker { color: var(--go); font-weight: 700; }
+
+ul { margin: 0 0 1rem; padding-left: 1.2rem; }
+ul li { margin-bottom: .6rem; }
+
+/* 數字表 */
+.table-scroll { overflow-x: auto; margin: 0 0 1rem; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .95rem;
+}
+
+th, td {
+  padding: .5rem .7rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  white-space: nowrap;
+}
+
+th { color: var(--fg-dim); font-weight: 500; }
+
+.fine { color: var(--fg-dim); font-size: .88rem; }
+
+.warn-text { color: var(--warn); }
+
+footer.foot {
+  margin-top: 2.4rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--line);
+  color: var(--fg-dim);
+  font-size: .9rem;
+}
+
+footer.foot ul { list-style: none; padding: 0; }
+footer.foot li { margin-bottom: .5rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <p class="tag">AI 願望池願望 #37 的實作</p>
+  <h1>台語即時字幕</h1>
+  <p class="lead">對手機或電腦講台語，螢幕即時顯示繁體中文字，讓旁邊不懂台語的人當場讀。單向：台語語音進，繁體中文字出。</p>
+</header>
+
+<section class="notice">
+  <h2>先講最重要的一件事</h2>
+  <p><strong>這一頁只是前端。</strong>辨識不在這裡跑，也沒有雲端服務可以借用。你要把 repo 抓下來、在自己的電腦上把後端跑起來，這一頁才會出字。</p>
+  <p><strong>而且即時字幕實質上需要一張 NVIDIA GPU。</strong>純 CPU 一句話講完要等四到八秒才出字，而下一句已經在講了，只會越積越多。（純 CPU 拿來做「錄一段丟進去、等十幾秒拿逐字稿」倒是很划算，30 秒音檔四執行緒 9.4 秒就跑完。）</p>
+  <p>為什麼不能直接給你一個線上網址：這顆模型是別人微調的，所有託管模型 API 都跑不了它，Cloudflare Workers AI 只有內建模型，Hugging Face 也沒有任何 inference provider 在服務它。算力一定要自己出。</p>
+</section>
+
+<h2>這是什麼</h2>
+
+<p>辨識與台語到華語的轉寫由同一顆模型一步完成。用的是 <a href="https://huggingface.co/MediaTek-Research/Breeze-ASR-26" target="_blank" rel="noopener">MediaTek-Research/Breeze-ASR-26</a>，它本身就把台語語音寫成華語用字的繁體中文，所以中間沒有第二段翻譯流程。實跑載入的是社群的 CTranslate2 int8 量化版，1.56GB，跑在 faster-whisper 上。</p>
+
+<p>它不做這些：不做中文轉台語（方向只有一邊）、不把結果唸出來、不分辨誰在講話、不存逐字稿（後端不寫檔也沒有資料庫，字幕只活在瀏覽器畫面上，重新整理就沒了）、沒有登入。</p>
+
+<h2>先看它長什麼樣</h2>
+
+<figure>
+  <video controls playsinline preload="metadata" poster="demo-poster.jpg">
+    <source src="demo.mp4" type="video/mp4">
+    <p class="fine">你的瀏覽器不能播放這段影片，可以直接下載 <a href="demo.mp4">demo.mp4</a>。</p>
+  </video>
+  <figcaption>
+    <p>影片裡的音源是教育部臺灣台語常用詞辭典的例句錄音，取自 Hugging Face 上的 <a href="https://huggingface.co/datasets/sarahwei/Taiwanese-Minnan-Example-Sentences" target="_blank" rel="noopener">sarahwei/Taiwanese-Minnan-Example-Sentences</a> 資料集，授權 CC BY-NC-SA 4.0。</p>
+    <p><strong>拍法要說清楚：音檔是從喇叭放出來、經過空氣、由麥克風收進去的</strong>，不是把檔案直接餵給程式。所以畫面上看到的收音、切句與錯字，就是真實聲學條件下會遇到的情況。</p>
+    <p>誠實邊界：這仍然是預錄音檔經過喇叭，不是真人當場開口講話。真人自然口語目前沒有量過。</p>
+  </figcaption>
+</figure>
+
+<h2>自己跑起來</h2>
+
+<ol class="steps">
+  <li>
+    <p>把 repo 抓下來，建虛擬環境，裝相依套件，然後啟動。</p>
+<pre><code>git clone https://github.com/yazelin/taigi-caption.git
+cd taigi-caption
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+scripts/run.sh</code></pre>
+    <p>第一次啟動會自動從 Hugging Face 下載模型，約 1.56GB，之後走本機快取。沒有憑證時 <code>scripts/run.sh</code> 走 HTTP，預設監聽 <code>http://127.0.0.1:8000</code>。</p>
+  </li>
+  <li>
+    <p>後端跑起來之後，回到這一頁按下面的「打開字幕介面」。介面的「設定」裡，後端位址要填 <code>http://127.0.0.1:8000</code>。按鈕的連結已經把這個位址帶好了，通常不用自己打字。</p>
+  </li>
+  <li>
+    <p><strong>這一頁是 HTTPS，但它可以直接打你本機的 http 後端。</strong>整條路已經實測通過：這個網址的前端，配上跑在你電腦上的後端，真的會出字幕，不需要為了這一頁去弄本機憑證。</p>
+    <p><strong>但瀏覽器會問你兩次權限，兩次都要按允許：</strong></p>
+    <ul>
+      <li><strong>麥克風</strong>。不給就沒辦法收音，這個很直覺。</li>
+      <li><strong>存取本機網路裝置</strong>。這個聽起來嚇人，但原因很單純：這一頁在網路上，      你的後端在自己電腦裡，Chrome 會確認你真的要讓這個網站連進自己的電腦。      按拒絕的話，畫面會一直說後端連不上，主控台會出現      <code>Permission was denied for this request to access the loopback address space</code>。</li>
+    </ul>
+    <p class="fine">只在 Chrome 測過。Safari 與 Firefox 對這兩件事的處理不一樣，沒測過就不寫成能用。</p>
+    <p class="fine">誠實補一句：只測過 Chrome，Safari 與 Firefox 沒測過。</p>
+  </li>
+</ol>
+
+<a class="cta" href="app/?api=http%3A%2F%2F127.0.0.1%3A8000">打開字幕介面</a>
+
+<p class="fine">沒有後端也可以進去看介面長什麼樣。介面裡有「示範模式」開關，會播放預錄的假字幕，而且每一句都標著「示範」，不會假裝那是真的辨識結果。</p>
+
+<h2>手機怎麼辦</h2>
+
+<p>上面那條本機捷徑只適用於電腦。<strong>手機開這一頁時，<code>127.0.0.1</code> 指的是手機自己</strong>，連不到你那台電腦，所以按鈕帶的位址在手機上不會有東西回應。</p>
+
+<p>手機要用，得讓手機連得到你的電腦，而且必須走 HTTPS（瀏覽器只在 HTTPS 或 localhost 才給麥克風權限）。兩條路：</p>
+
+<ul>
+  <li><strong>區網加自簽憑證。</strong>跑 repo 裡的 <code>scripts/make-cert.sh</code> 產一張自簽憑證，<code>scripts/run.sh</code> 找得到 <code>certs/</code> 就自動走 HTTPS，預設 8443。手機與電腦接同一個 Wi-Fi，開 <code>https://&lt;電腦的 IP&gt;:8443/</code>，第一次會跳安全性警告，要自己按繼續。這個網址本身就同時服務介面與辨識，所以走這條路時不必經過這一頁。</li>
+  <li><strong>通道。</strong>cloudflared、Tailscale Funnel、ngrok 之類可以把本機服務變成公開 HTTPS 網址，而且發的是受信任的憑證。各家的限制與費用整理在 repo 的 <a href="https://github.com/yazelin/taigi-caption/blob/main/docs/HOSTING.md" target="_blank" rel="noopener">docs/HOSTING.md</a>。</li>
+</ul>
+
+<p class="fine">附帶一個實測到的限制：用自簽憑證時 Chrome 不讓那個來源註冊 service worker，所以沒有離線外殼、也不能「加到主畫面」，只有字幕功能本身可用。要完整的 PWA 行為需要一張被信任的憑證。</p>
+
+<h2>它有多準（請先讀完再用）</h2>
+
+<p>官方公布的數字：Breeze-ASR-26 在官方 Taigi ASR Benchmark（30 筆測試樣本）的平均 CER 是 <strong>30.13%</strong>，單筆最好 14.49%、最差 52.78%。</p>
+
+<p>本專案自己量的數字：素材是 14 段行政院公共服務台語廣播的真人音檔，加 3 段合成音檔，共 17 段，套用與正式版相同的防幻聽過濾器。</p>
+
+<div class="table-scroll">
+<table>
+  <thead>
+    <tr><th>語言 token</th><th>平均 CER</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>en</code>（預設）</td><td>29.7%</td></tr>
+    <tr><td><code>zh</code></td><td>30.4%</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>與官方公布的 30.13% 是同一個量級。</p>
+
+<h3>所以請這樣期待它</h3>
+
+<p><strong>它足以讓不懂台語的人當場抓到意思，但會有明顯錯字。</strong>人名、機關名、專有名詞要特別留意，<span class="warn-text">不適合當正式紀錄</span>。</p>
+
+<p>舉一個實測抄下來的例子：原句是「請駕駛朋友配合改走別條路」，字幕出來變成「請<span class="warn-text">教師</span>朋友配合改走別條路」。這種錯不是看起來怪而已，它會直接誤導語意。</p>
+
+<p class="fine">另一件要說清楚的事：CER 30% 不等於「三成的字一定錯」。台語與華語不是一對一對應，同一句台語可以有好幾種合理的華語說法，以華語稿當基準算 CER 時，「意思對但用詞不同」也會被算成錯。模型卡自己就寫了這件事，所以絕對值要小心解讀，它適合拿來做系統之間的相對比較，不適合當成轉寫正確率。完整量法、逐段結果與所有踩過的坑都記在驗證紀錄裡。</p>
+
+<footer class="foot">
+  <p>這是 yazelin 的 AI 願望池願望 #37「台語即時語音翻譯手機工具」的實作。許願者的原話：「在使用台語溝通時，只要有一位聽者不懂台語，對話就會受阻」。</p>
+  <ul>
+    <li><a href="https://github.com/yazelin/taigi-caption" target="_blank" rel="noopener">GitHub 原始碼 yazelin/taigi-caption</a></li>
+    <li><a href="https://yazelin.github.io/wish-pool/" target="_blank" rel="noopener">AI 願望池</a></li>
+    <li><a href="https://huggingface.co/MediaTek-Research/Breeze-ASR-26" target="_blank" rel="noopener">模型卡 MediaTek-Research/Breeze-ASR-26</a></li>
+    <li><a href="https://github.com/yazelin/taigi-caption/blob/main/VERIFICATION.md" target="_blank" rel="noopener">驗證紀錄 VERIFICATION.md</a></li>
+  </ul>
+  <p>模型要致謝 MediaTek Research 與陽明交通大學的 Speech AI Research Center，權重授權 Apache-2.0。本專案程式碼採 MIT，著作權人林亞澤。</p>
+</footer>
+
+</div>
+</body>
+</html>
