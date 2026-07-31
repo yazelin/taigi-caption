@@ -1,18 +1,30 @@
 # Next
 
-- [x] 真機開過可用(2026-07-30 亞澤用自己的手機連 https 區網位址,回報「看起來可以」)。
-      這是唯一沒辦法靠自動化取得的證據,現在有了。
-      未記錄的部分:當時用的是哪支手機與哪個瀏覽器,所以 iOS Safari 仍不算單獨驗過。
-- [ ] 真機的「手感」還沒回報:自然對話的停頓能不能正常切句、字級在手臂距離讀不讀得清楚。
-      多用幾次再判斷,不要憑一次印象調參數。
-- [x] 說明頁已上 GitHub Pages:https://yazelin.github.io/taigi-caption/ (2026-07-31)。
-      前端可直接驅動使用者本機的後端,已從線上網址實測通過。repo homepage 也設好了。
-      重新佈署跑 scripts/publish-pages.sh(它每次都從 web/ 重新複製,不會漂移)。
-- [ ] repo 的 Settings → Social preview 手動上傳一張成果截圖(GitHub 沒有 API),
-      願望池那邊會自動把它顯示成實作預覽。可以用 web-pages/demo-poster.jpg。
-- [ ] 願望 #37 的完成條件已寫死在願望池的進度裡:有人把後端架起來給一個公開網址就算成真。
-      選項與各家限制在 docs/HOSTING.md,目前最實際的是 Beam(每月 30 美元額度重置、FastAPI 幾乎不用改)。
-- [ ] 若真機測出 VAD 切得太碎或太晚,調 web/app.js 的 HANG(靜音多久算句子結束,目前 700ms)
-      與 MAXF(硬上限,目前 12 秒),不要動門檻以外的邏輯。
-- [ ] 沒做但可能有價值:真人自然口語的 CER 目前沒有樣本(手上 14 段都是專業配音的廣播),
-      要更可信的準確度數字需要真人隨口講話的錄音加對照文字。
+**專案狀態:已交付,不再繼續開發(2026-07-31)。**
+
+程式完成、驗證完成、說明頁上線、願望池已交答案並補了指路。
+yazelin 決定到此告一段落,下面的項目留著當紀錄,不是待辦。
+之後若有人要接手,從 README 與 VERIFICATION.md 開始讀就夠了。
+
+## 交付了什麼
+
+- repo:https://github.com/yazelin/taigi-caption (MIT,林亞澤)
+- 說明頁與 demo 影片:https://yazelin.github.io/taigi-caption/
+  重新佈署跑 `scripts/publish-pages.sh`(每次從 web/ 重新複製,不會漂移)
+- 願望池願望 #37:交了實作(本 repo)與一則指路答案(雅婷逐字稿),
+  狀態維持「實現中」,完成條件寫在該願望的進度裡:有人把後端架成公開網址就算成真。
+
+## 已知還沒做的(留著,不是待辦)
+
+- repo 的 Settings → Social preview 沒有上傳截圖(GitHub 沒有 API,要手動)。
+  素材現成:`web-pages/demo-poster.jpg`。
+- FB 貼文寫好了但沒有發。稿子不在 repo 裡,在當時的 scratchpad。
+- 真機的使用手感沒有回報(切句時機、字級)。只知道 2026-07-30 用手機開過、可以運作。
+- 真人自然口語的 CER 沒有樣本(手上 14 段都是專業配音的廣播)。
+- 沒有真 iOS Safari 測過,只有 Chrome 的手機視埠模擬。
+
+## 本機環境已經清掉
+
+模型 `WizardForest/faster-whisper-Breeze-ASR-26-int8`(1.56GB)已從 Hugging Face 快取刪除,
+`testdata/` 的音檔還在但不進版控。要重新跑起來:`scripts/run.sh` 會自動重新下載模型,
+第一次啟動要等下載完。venv 還在 `.venv/`。
