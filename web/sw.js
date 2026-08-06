@@ -14,7 +14,9 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      // 只清自己的 taigi-caption-*:CacheStorage 是 per-origin,yazelin.github.io 所有專案
+      // 共用同一份,無差別刪會把 gewu、neko 等別站的離線包整包清掉,而且毫無徵兆。
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith('taigi-caption-') && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
