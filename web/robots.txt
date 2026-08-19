@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://yazelin.github.io/taigi-caption/app/sitemap.xml

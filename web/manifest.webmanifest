@@ -1,6 +1,7 @@
 {
   "name": "台語即時字幕",
   "short_name": "台語字幕",
+  "id": "./",
   "description": "對手機講台語,畫面即時顯示繁體中文字,給不懂台語的人讀。",
   "lang": "zh-Hant-TW",
   "dir": "ltr",
@@ -14,5 +15,9 @@
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "screenshot-mobile.webp", "sizes": "540x1170", "type": "image/webp", "form_factor": "narrow", "label": "手機上的台語即時字幕畫面" },
+    { "src": "screenshot-desktop.webp", "sizes": "1280x800", "type": "image/webp", "form_factor": "wide", "label": "桌機上的台語即時字幕畫面" }
   ]
 }
