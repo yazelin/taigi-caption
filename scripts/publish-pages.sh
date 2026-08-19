@@ -27,7 +27,9 @@ for f in web-pages/demo.mp4 web-pages/demo-poster.jpg; do
 done
 mkdir -p "$BUILD/app"
 cp web/index.html web/app.js web/styles.css web/sw.js web/manifest.webmanifest \
-   web/icon-192.png web/icon-512.png web/selfcheck.md "$BUILD/app/"
+   web/icon-192.png web/icon-512.png web/selfcheck.md \
+   web/robots.txt web/sitemap.xml web/og-image.png \
+   web/screenshot-mobile.webp web/screenshot-desktop.webp "$BUILD/app/"
 touch "$BUILD/.nojekyll"   # 沒有這個,Jekyll 會吃掉底線開頭的檔案並亂處理 .md
 
 echo "內容:"
